@@ -261,7 +261,9 @@ class dashboard_view:
                 if comments[cindex]["post_index"] == pindex:
                     comment_author_index = comments[cindex]['author_id']
                     comment_author_name = user[comment_author_index]["username"]
+                    comment = comments[cindex]['comment']
                     print(f'Author: {comment_author_name}')
+                    print(f'Comments: {comment}')
                 else:
                     pass
             print()
@@ -306,37 +308,32 @@ class dashboard_controller:
             self.model["users"].read_user()
         )
         try:
-            post = self.model['Posts'].get_posts()[int(post_selection) -1]
-            author_index = post['author_id']
+            post_index = self.model['Posts'].get_posts()[int(post_selection) -1]
+            author_index = post_index['author_id']
             author = self.model['users'].read_user()[author_index]['username']
-            post_content = post["post"]
+            post_content = post_index["post"]
             self.view.print_selected_post(author,post_content)
             comment_option = self.view.comment_option()
-            self.comment_option = int(comment_option)
-            self.comment_option_fuction()
-        except NameError:
-            input('INVALID INPUT: PRESS ENTER TO CONTINUE')
-            self.friends_post()
-    def comment_option_fuction(self):
-        try:
-            if self.comment_option == 1:
-                #create comment
-                pass
-            elif self.comment_option == 2:
-                #update comment
-                pass
-            elif self.comment_option == 3:
-                #delete comment\
-                pass
-            else:
-                self.comment_option_fuction()
-
+            comment_option = int(comment_option)
+            if comment_option == 1:
+                comment_input = input('COMMENT: ')
+                self.create_comment(current_user=current_user_index,post_index=int(post_selection)-1,comment=comment_input)
+                self.friends_post()
+            elif comment_option == 2:
+                self.update_comment()
+            elif comment_option == 3:
+                self.delete_comment()
 
         except:
-            pass
-        
+            input('INVALID INPUT: PRESS ENTER TO CONTINUE')
+            self.friends_post()
 
-
+    def create_comment(self,current_user,post_index,comment):
+        self.model['comment'].create_comment(current_user,post_index,comment)
+    def update_comment(self,current_user,updated_comment,comment_index):
+        pass
+    def delete_comment(self,current_user,comment_index):
+        pass
 
 
         
