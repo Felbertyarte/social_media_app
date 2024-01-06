@@ -216,6 +216,16 @@ class auth_view:
 
 
 class dashboard_view:
+
+    def print_selected_post(self,author,content):
+        print(f'AUTHOR: {author}')
+        print(f'CONTENT: {content}')
+        
+    def comment_option(self):
+        print('1). CREATE COMMENT  2). UPDATE  3). DELETE')
+        option = input('OPTION: ')
+        return option
+
     def print_current_user(self,current_username):
         print(f'''CurrentUser: {current_username}
 
@@ -255,6 +265,8 @@ class dashboard_view:
                 else:
                     pass
             print()
+        post_select = input("SELECT POST TO COMMENT: ")
+        return (post_select)
 
     def select_dashboard_option(self):
         print('''
@@ -293,7 +305,40 @@ class dashboard_controller:
             self.model["comment"].get_all_comments(),
             self.model["users"].read_user()
         )
+        try:
+            post = self.model['Posts'].get_posts()[int(post_selection) -1]
+            author_index = post['author_id']
+            author = self.model['users'].read_user()[author_index]['username']
+            post_content = post["post"]
+            self.view.print_selected_post(author,post_content)
+            comment_option = self.view.comment_option()
+            self.comment_option = int(comment_option)
+            self.comment_option_fuction()
+        except NameError:
+            input('INVALID INPUT: PRESS ENTER TO CONTINUE')
+            self.friends_post()
+    def comment_option_fuction(self):
+        try:
+            if self.comment_option == 1:
+                #create comment
+                pass
+            elif self.comment_option == 2:
+                #update comment
+                pass
+            elif self.comment_option == 3:
+                #delete comment\
+                pass
+            else:
+                self.comment_option_fuction()
+
+
+        except:
+            pass
         
+
+
+
+
         
 
     def create_post(self):
