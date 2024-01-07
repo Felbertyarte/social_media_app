@@ -205,8 +205,8 @@ class auth_view:
         username = input("Username: ")
         password = input("Password: ")
         return {
-            "username":username,
-            "password":password
+            "username":'felbert',
+            "password":'felbert14'
         }
     def loginfail(self):
         print("login failed")
@@ -216,10 +216,20 @@ class auth_view:
 
 
 class dashboard_view:
-
-    def print_selected_post(self,author,content):
+    
+    def comment_update(self):
+        pass
+    def print_selected_post(self,author,content,comments,user):
         print(f'AUTHOR: {author}')
         print(f'CONTENT: {content}')
+        for ci in range(len(comments)):
+            print(f'COMMENT NO.{ci +1}')
+            comment_author_index = comments[ci]['author_id']
+            comment_author_username = user[comment_author_index]['username']
+            comment = comments[ci]['comment']
+            print(f' AUTHOR: {comment_author_username}')
+            print(f' {comment}')
+
         
     def comment_option(self):
         print('1). CREATE COMMENT  2). UPDATE  3). DELETE')
@@ -263,7 +273,7 @@ class dashboard_view:
                     comment_author_name = user[comment_author_index]["username"]
                     comment = comments[cindex]['comment']
                     print(f'Author: {comment_author_name}')
-                    print(f'Comments: {comment}')
+                    print(f' {comment}')
                 else:
                     pass
             print()
@@ -273,7 +283,7 @@ class dashboard_view:
     def select_dashboard_option(self):
         print('''
         Select Dashboard Option
-1). Create_post         2). go to Friends Post''')
+1). CREATE POST        2). VIEW POST AND COMMENT''')
         option = input("Option: ")
         
         return int(option)
@@ -312,14 +322,33 @@ class dashboard_controller:
             author_index = post_index['author_id']
             author = self.model['users'].read_user()[author_index]['username']
             post_content = post_index["post"]
-            self.view.print_selected_post(author,post_content)
+            comment_model = self.model['comment'].get_all_comments()
+            user_model = self.model['users'].read_user()
+            comments = []
+
+            for cindex in range(len(comment_model)):
+                if comment_model[cindex]['post_index'] == int(post_selection) -1:
+                    comment_add = comment_model[cindex]
+                    comment_add['comment_index'] = cindex
+                    comments.append(comment_add)
+                else:
+                    pass
+
+            
+            self.view.print_selected_post(author,post_content,comments,user_model)
             comment_option = self.view.comment_option()
             comment_option = int(comment_option)
             if comment_option == 1:
                 comment_input = input('COMMENT: ')
-                self.create_comment(current_user=current_user_index,post_index=int(post_selection)-1,comment=comment_input)
+                self.create_comment(current_user=self.current_user_index,post_index=int(post_selection)-1,comment=comment_input)
                 self.friends_post()
             elif comment_option == 2:
+                select_comment = input('SELECT COMMENT NO:')
+                select_comment = int(select_comment)
+                if self.current_user_index != comments[select_comment -1]['author_id']:
+                    print('YOU ARE NOT THE AUTHOR IN THIS COMMENT')
+                else:
+                    pass
                 self.update_comment()
             elif comment_option == 3:
                 self.delete_comment()
