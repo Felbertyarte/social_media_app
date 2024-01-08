@@ -138,6 +138,7 @@ class auth_controller:
         else:
             register_option = self.view.register_confirm_pass_fail()
             if register_option != "":
+                clear()
                 return False
             else:
                 return True
@@ -205,8 +206,8 @@ class auth_view:
         username = input("Username: ")
         password = input("Password: ")
         return {
-            "username":'felbert',
-            "password":'felbert14'
+            "username":username,
+            "password":password
         }
     def loginfail(self):
         print("login failed")
@@ -216,7 +217,10 @@ class auth_view:
 
 
 class dashboard_view:
-    
+    def update_delete_succ(self,messege):
+        input(messege)
+    def update_delete_fail(self,messege):
+        input(messege)
     def comment_update(self):
         pass
     def print_selected_post(self,author,content,comments,user):
@@ -266,26 +270,27 @@ class dashboard_view:
             content = posts[pindex]["post"]
             print(f'Author: {Author}')
             print(f'Content: {content}')
-            print(' Comments:')
             for cindex in range(len(comments)):
                 if comments[cindex]["post_index"] == pindex:
+                    print("  COMMENT:")
                     comment_author_index = comments[cindex]['author_id']
                     comment_author_name = user[comment_author_index]["username"]
                     comment = comments[cindex]['comment']
-                    print(f'Author: {comment_author_name}')
-                    print(f' {comment}')
+                    print(f'    Author: {comment_author_name}')
+                    print(f'        {comment}')
                 else:
                     pass
             print()
+        print('TYPE -e- FOR EXIT')
         post_select = input("SELECT POST TO COMMENT: ")
         return (post_select)
 
     def select_dashboard_option(self):
         print('''
+        TYPE -l- TO LOGOUT
         Select Dashboard Option
-1). CREATE POST        2). VIEW POST AND COMMENT''')
+1). VIEW_POST_AND_COMMENT   2). CREATE_POST    3). UPDATE_POST   4). DELETE_POST ''')
         option = input("Option: ")
-        
         return int(option)
     
     def create_post(self):
@@ -312,11 +317,15 @@ class dashboard_controller:
         self.view.print_current_user(
         self.model["users"].read_user()[self.current_user_index]["username"]
         )
+        clear()
         post_selection = self.view.view_posts(
             self.model["Posts"].get_posts(),
             self.model["comment"].get_all_comments(),
             self.model["users"].read_user()
         )
+        if post_selection == 'e' or 'E':
+            self.start_dashboard()
+        clear()
         try:
             post_index = self.model['Posts'].get_posts()[int(post_selection) -1]
             author_index = post_index['author_id']
@@ -346,23 +355,35 @@ class dashboard_controller:
                 select_comment = input('SELECT COMMENT NO:')
                 select_comment = int(select_comment)
                 if self.current_user_index != comments[select_comment -1]['author_id']:
-                    print('YOU ARE NOT THE AUTHOR IN THIS COMMENT')
+                    self.view.update_delete_fail('YOU ARE NOT THE AUTHOR ON SELECTED COMMENT')
+                    self.friends_post()
+                    comments.clear()
                 else:
-                    pass
-                self.update_comment()
+                    comment_update = input('UPDATED_COMMENT: ')
+                    selected_comment_update = comments[select_comment -1]
+                    main_comment_model_index = selected_comment_update['comment_index']
+                    self.model['comment'].get_all_comments()[main_comment_model_index]['comment'] = comment_update
+                    self.view.update_delete_succ('COMMENT UPDATED')
+                    self.friends_post()
+                    comments.clear()
             elif comment_option == 3:
-                self.delete_comment()
+                select_delete_comment = input('SELECT COMMENT: ')
+                if self.current_user_index != comments[int(select_delete_comment)-1]['author_id']:
+                    self.view.update_delete_fail('YOU ARE NOT THE AUTHOR ON SELECTED COMMENT')
+                    self.friends_post()
+                else:
+                    delcom_comment_selected = comments[int(select_delete_comment)-1]
+                    main_comment_model_index_to_del = delcom_comment_selected['comment_index']
+                    self.model['comment'].get_all_comments().pop(main_comment_model_index_to_del)
+                    self.friends_post()
+                
+                
 
-        except:
-            input('INVALID INPUT: PRESS ENTER TO CONTINUE')
-            self.friends_post()
+        except NameError:
+            pass
 
     def create_comment(self,current_user,post_index,comment):
         self.model['comment'].create_comment(current_user,post_index,comment)
-    def update_comment(self,current_user,updated_comment,comment_index):
-        pass
-    def delete_comment(self,current_user,comment_index):
-        pass
 
 
         
@@ -383,14 +404,22 @@ class dashboard_controller:
                 self.start_dashboard()
 
     def start_dashboard(self):
+        clear()
         self.view.print_current_user(
             self.model["users"].read_user()[self.current_user_index]["username"]
             )
         option = self.view.select_dashboard_option()
-        if option == 1:
+        if option == 2:
             self.create_post()
-            
-        elif option == 2:# for view posts
+        
+        elif option == 3:
+            pass
+        #update post
+        elif option == 4:
+            pass
+        #delete post
+
+        elif option == 1:# for view posts
             self.friends_post()
             
 
