@@ -162,8 +162,6 @@ class auth_controller:
             return 1
         if option == 2:
             return 2
-        else:
-            return None
 
 
 #v
@@ -217,6 +215,24 @@ class auth_view:
 
 
 class dashboard_view:
+    def select_post_delete(self):
+        selected_post = input('SELECT_POST_TO_DELETE: ')
+        return selected_post
+    def del_post_list(self,postnum,content):
+        print(f'POST #{postnum}')
+        print(f'CONTENT: {content}')
+        print()
+    def update_post(self,postnum,content):
+        print(f'POST #{postnum}')
+        print(f'CONTENT: {content}')
+        print()
+    def update_select_post(self):
+        select_post_update = input('SELECT POST TO EDIT: ')
+        return int(select_post_update) -1
+    def content_edit(self):
+        update_content = input('UPDATED_CONTENT: ')
+        return update_content
+
     def update_delete_succ(self,messege):
         input(messege)
     def update_delete_fail(self,messege):
@@ -291,7 +307,7 @@ class dashboard_view:
         Select Dashboard Option
 1). VIEW_POST_AND_COMMENT   2). CREATE_POST    3). UPDATE_POST   4). DELETE_POST ''')
         option = input("Option: ")
-        return int(option)
+        return (option)
     
     def create_post(self):
         print("0). Cancel")
@@ -323,7 +339,7 @@ class dashboard_controller:
             self.model["comment"].get_all_comments(),
             self.model["users"].read_user()
         )
-        if post_selection == 'e' or 'E':
+        if post_selection.lower() == 'e':
             self.start_dashboard()
         clear()
         try:
@@ -385,9 +401,6 @@ class dashboard_controller:
     def create_comment(self,current_user,post_index,comment):
         self.model['comment'].create_comment(current_user,post_index,comment)
 
-
-        
-
     def create_post(self):
         postloop = True
         while postloop:
@@ -409,20 +422,63 @@ class dashboard_controller:
             self.model["users"].read_user()[self.current_user_index]["username"]
             )
         option = self.view.select_dashboard_option()
-        if option == 2:
+        if str(option.lower()) == 'l':
+            clear()
+            return
+        elif int(option) == 2:
             self.create_post()
         
-        elif option == 3:
-            pass
+        elif int(option) == 3:
+            U_post = []
+            
+            post_model = self.model['Posts'].get_posts()
+            for pindex in range(len(post_model)):
+                if post_model[pindex]['author_id'] == self.current_user_index:
+                    post_model[pindex]['post_model_index'] = pindex
+                    U_post.append(post_model[pindex])
+                    post_num = pindex +1
+                    content = post_model[pindex]['post']
+                    self.view.update_post(post_num,content)
+                        
+                else:
+                    pass
+            if U_post == []:
+                input('No Post Created')
+                self.start_dashboard()
+            else:
+                selected_post = self.view.update_select_post()
+                updated_content = self.view.content_edit()
+                post_model_index = U_post[selected_post]['post_model_index']
+                self.model['Posts'].get_posts()[post_model_index]['post'] = updated_content
+                self.start_dashboard()
         #update post
-        elif option == 4:
-            pass
+        elif int(option) == 4:
+            D_post = []
+            for i in range(len(self.model['Posts'].get_posts())):
+                if self.model['Posts'].get_posts()[i]['author_id'] == self.current_user_index:
+                    self.model['Posts'].get_posts()[i]['post_model_index'] = i
+                    D_post.append(self.model['Posts'].get_posts()[i])
+                    post_num_del = i +1
+                    content_del = self.model['Posts'].get_posts()[i]['post']
+                    self.view.del_post_list(post_num_del,content_del)
+            if D_post == []:
+                input('NO POST CREATED')
+                self.start_dashboard()
+            else:
+                try:
+                    selected_post_del = self.view.select_post_delete()
+                    self.model['Posts'].get_posts().pop(D_post[int(selected_post_del) -1]['post_model_index'])
+                    print('POST DELETED')
+                    self.start_dashboard()
+                except:
+                    print('INVALID INPUT')
+                    self.start_dashboard()
+
         #delete post
 
-        elif option == 1:# for view posts
+        elif int(option) == 1:# for view posts
             self.friends_post()
-            
-
+        
         
 
 if __name__ == "__main__":
@@ -443,31 +499,40 @@ if __name__ == "__main__":
     
     AuthLoop = True
     while AuthLoop:
-        option = Auth_controller.sel_option()
-        if option == 1:
-            current_user_index = Auth_controller.login()
-            if current_user_index is not None:
-                AuthLoop = False
-                Dashboard_controller = dashboard_controller(
-                    view=Dashboard_view,
-                    model=Dashboard_models,
-                    current_user_Index=current_user_index,
-                )
-                Dashboard_controller.start_dashboard()
-            else:
-                AuthLoop = True
-                clear()
-        elif option == 2:
-            Register_Loop = True
-            while Register_Loop:
-                clear()
-                register_successful = Auth_controller.register()
-                if register_successful is not True:
-                    Register_Loop = True
+        try:
+            option = Auth_controller.sel_option()
+            if option >= 3:
+                input('INVALID INPUT PRESS ENTER TO CONTINUE')
+            elif option == 1:
+                current_user_index = Auth_controller.login()
+                if current_user_index is not None:
+                    AuthLoop = False
+                    Dashboard_controller = dashboard_controller(
+                        view=Dashboard_view,
+                        model=Dashboard_models,
+                        current_user_Index=current_user_index,
+                    )
+                    Dashboard_controller.start_dashboard()
+                    AuthLoop = True
+                else:
                     AuthLoop = True
                     clear()
-                else:
-                    Register_Loop = False
-                    AuthLoop = True
+            elif option == 2:
+                Register_Loop = True
+                while Register_Loop:
+                    clear()
+                    register_successful = Auth_controller.register()
+                    if register_successful is not True:
+                        Register_Loop = True
+                        AuthLoop = True
+                        clear()
+                    else:
+                        Register_Loop = False
+                        AuthLoop = True
+        except:
+            input('INVALID INPUT PRESS ENTER TO CONTINUE')
+            clear()
+
+        
 
 
