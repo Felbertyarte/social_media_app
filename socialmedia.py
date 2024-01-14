@@ -1,6 +1,6 @@
 import os
 
-clear = lambda: os.system('cls')
+clear = lambda: os.system('clear')
 
 class datauser:
     def __init__(self):
@@ -412,6 +412,8 @@ class dashboard_controller:
                 self.view.content_empty()
                 postloop = True
             elif content != "":
+                clear()
+                input('POST CREATED')
                 self.model["Posts"].create_user_post(content,self.current_user_index)
                 postloop = False
                 self.start_dashboard()
@@ -425,9 +427,16 @@ class dashboard_controller:
         if str(option.lower()) == 'l':
             clear()
             return
+        elif str(option.lower()) == '':
+        	input('INVALID INPUT PRESS ENTER TO CONTINUE')
+        	clear()
+        	self.start_dashboard()
+        elif option.isalpha():
+        	input('INVALID INPUT PRESS ENTER TO CONTINUE')
+        	clear()
+        	self.start_dashboard()
         elif int(option) == 2:
             self.create_post()
-        
         elif int(option) == 3:
             U_post = []
             
@@ -532,7 +541,3 @@ if __name__ == "__main__":
         except:
             input('INVALID INPUT PRESS ENTER TO CONTINUE')
             clear()
-
-        
-
-
